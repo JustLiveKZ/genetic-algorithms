@@ -1,6 +1,6 @@
-import math
 import random
-from chromosome import Chromosome
+
+import chromosome as chromosome_module
 
 
 class ChromosomeManager(object):
@@ -8,8 +8,8 @@ class ChromosomeManager(object):
         self.target_value = 42
         self.crossover_rate = 0.7
         self.mutation_rate = 0.001
-        self.max_generations = 20
-        self.max_score = -1
+        self.max_generations = 1000
+        self.max_score = 1e18
         self.population = 10
         self.chromosome_lexeme_length = 9
         self.bits_in_lexeme = 4
@@ -35,29 +35,28 @@ class ChromosomeManager(object):
 
     def solve(self):
         self.generate_first_generation()
-        for i in range(0, self.max_generations):
+        for generation in range(0, self.max_generations):
             for chromosome in self.chromosomes:
                 chromosome.evaluate(self.target_value)
                 if chromosome.score == self.max_score:
-                    return chromosome
-            chromosome1, chromosome2 = self.do_roulette_wheel()
-
+                    return chromosome, generation
+            new_generation = []
+            while len(new_generation) != self.population:
+                chromosome1, chromosome2 = self.do_roulette_wheel()
+                self.crossover(chromosome1, chromosome2)
+                chromosome1.mutate(self.mutation_rate)
+                chromosome2.mutate(self.mutation_rate)
+                new_generation.append(chromosome1)
+                new_generation.append(chromosome2)
+            self.chromosomes = new_generation
+        chromosome = max(self.chromosomes, key=lambda c: c.score)
+        return chromosome, self.max_generations - 1
 
     def generate_first_generation(self):
         for i in range(0, self.population):
-            chromosome = Chromosome()
-            chromosome.fitness_evaluator = self.get_default_fitness_evaluator()
+            chromosome = chromosome_module.Chromosome()
             chromosome.fill_with_random_values()
             self.chromosomes.append(chromosome)
-
-    def get_default_fitness_evaluator(self):
-        def fitness_evaluator(_self, value, target_value):
-            try:
-                return 1 / math.fabs(value - target_value)
-            except ZeroDivisionError:
-                return self.max_score
-
-        return fitness_evaluator
 
     def do_roulette_wheel(self):
         scores = [chromosome.score for chromosome in self.chromosomes]
@@ -66,14 +65,31 @@ class ChromosomeManager(object):
         probabilities = [worth_of_one_point * score for score in scores]
         lucky_chromosomes = [None, None]
         for i in range(0, 2):
-            random_number = random.randint(0, 100)
-            index = 0
-            probability = probabilities[index]
-            while probability < random_number:
-                index += 1
-                probability += probabilities[index]
+            while True:
+                random_number = random.randint(1, 100)
+                index = self.get_index(random_number, probabilities)
+                if self.chromosomes[index] not in lucky_chromosomes:
+                    break
             lucky_chromosomes[i] = self.chromosomes[index]
         return tuple(lucky_chromosomes)
+
+    def get_index(self, random_number, probabilities):
+        index = 0
+        probability = probabilities[index]
+        while probability < random_number:
+            index += 1
+            if index == len(probabilities):
+                index -= 1
+                break
+            probability += probabilities[index]
+        return index
+
+    def crossover(self, chromosome1, chromosome2):
+        if random.random() < self.crossover_rate:
+            position = random.randint(0, self.chromosome_lexeme_length * self.bits_in_lexeme)
+            temp = chromosome1.binary_string[position:]
+            chromosome1.binary_string = chromosome1.binary_string[:position] + chromosome2.binary_string[position:]
+            chromosome2.binary_string = chromosome2.binary_string[:position] + temp
 
 
 chromosome_manager = ChromosomeManager()
