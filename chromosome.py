@@ -45,9 +45,12 @@ class Chromosome(object):
             self.binary_string += str(random.randint(0, 1))
 
     def mutate(self, mutation_rate):
+        mutated_chars_count = 0
         for i in range(0, len(self.binary_string)):
             if random.random() < mutation_rate:
+                mutated_chars_count += 1
                 if self.binary_string[i] == '1':
                     self.binary_string = self.binary_string[:i] + '0' + self.binary_string[i + 1:]
                 else:
                     self.binary_string = self.binary_string[:i] + '1' + self.binary_string[i + 1:]
+        return mutated_chars_count
