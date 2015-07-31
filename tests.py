@@ -44,15 +44,15 @@ class ChromosomeManagerTestCase(unittest.TestCase):
         self.assertEqual(len(self.chromosome_manager.chromosomes), 10)
 
     def test_get_index(self):
-        probabilities = [10, 5, 10, 20, 50, 5]
-        self.assertEqual(self.chromosome_manager.get_index(7, probabilities), 0)
-        self.assertEqual(self.chromosome_manager.get_index(10, probabilities), 0)
-        self.assertEqual(self.chromosome_manager.get_index(11, probabilities), 1)
-        self.assertEqual(self.chromosome_manager.get_index(25, probabilities), 2)
-        self.assertEqual(self.chromosome_manager.get_index(38, probabilities), 3)
-        self.assertEqual(self.chromosome_manager.get_index(73, probabilities), 4)
-        self.assertEqual(self.chromosome_manager.get_index(96, probabilities), 5)
-        self.assertEqual(self.chromosome_manager.get_index(100, probabilities), 5)
+        probabilities = [0.1, 0.05, 0.1, 0.2, 0.5, 0.05]
+        self.assertEqual(self.chromosome_manager.get_index(0.07, probabilities), 0)
+        self.assertEqual(self.chromosome_manager.get_index(0.1, probabilities), 0)
+        self.assertEqual(self.chromosome_manager.get_index(0.11, probabilities), 1)
+        self.assertEqual(self.chromosome_manager.get_index(0.25, probabilities), 2)
+        self.assertEqual(self.chromosome_manager.get_index(0.38, probabilities), 3)
+        self.assertEqual(self.chromosome_manager.get_index(0.73, probabilities), 4)
+        self.assertEqual(self.chromosome_manager.get_index(0.96, probabilities), 5)
+        self.assertEqual(self.chromosome_manager.get_index(1, probabilities), 5)
 
     def test_roulette_wheel(self):
         self.chromosome_manager.generate_first_generation()
@@ -62,6 +62,13 @@ class ChromosomeManagerTestCase(unittest.TestCase):
         self.assertNotEqual(chromosome1, chromosome2)
         self.assertIn(chromosome1, self.chromosome_manager.chromosomes)
         self.assertIn(chromosome2, self.chromosome_manager.chromosomes)
+
+    def test_crossover(self):
+        self.chromosome_manager.generate_first_generation()
+        for chromosome in self.chromosome_manager.chromosomes:
+            chromosome.evaluate(self.chromosome_manager.target_value)
+        chromosome1, chromosome2 = self.chromosome_manager.do_roulette_wheel()
+        self.chromosome_manager.crossover(chromosome1, chromosome2)
 
 
 if __name__ == '__main__':

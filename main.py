@@ -1,9 +1,14 @@
-from manager import chromosome_manager
+import traceback
+from application import Application
+
+DEBUG = True
 
 if __name__ == '__main__':
-    chromosome, generation = chromosome_manager.solve()
-
-    print(chromosome.binary_string)
-    print(chromosome.result)
-    print(chromosome.score)
-    print(generation)
+    try:
+        app = Application()
+        app.run()
+    except Exception as e:
+        if DEBUG:
+            print(traceback.print_exc())
+        else:
+            print(str(e))

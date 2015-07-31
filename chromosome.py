@@ -10,6 +10,9 @@ class Chromosome(object):
         self.score = 0
         self.result = 0
 
+    def __str__(self):
+        return self.binary_string
+
     def evaluate_fitness(self, target_value):
         try:
             self.score = 1 / math.fabs(self.result - target_value)

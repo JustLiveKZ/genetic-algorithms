@@ -61,12 +61,17 @@ class ChromosomeManager(object):
     def do_roulette_wheel(self):
         scores = [chromosome.score for chromosome in self.chromosomes]
         total_score = sum(scores)
-        worth_of_one_point = 100 / total_score
+        worth_of_one_point = 1. / total_score
         probabilities = [worth_of_one_point * score for score in scores]
+        try:
+            assert sum(probabilities) == 1.
+        except AssertionError:
+            probabilities[-1] = 1. - sum(probabilities[:-1])
+            assert sum(probabilities) == 1.
         lucky_chromosomes = [None, None]
         for i in range(0, 2):
             while True:
-                random_number = random.randint(1, 100)
+                random_number = random.random()
                 index = self.get_index(random_number, probabilities)
                 if self.chromosomes[index] not in lucky_chromosomes:
                     break
@@ -78,15 +83,12 @@ class ChromosomeManager(object):
         probability = probabilities[index]
         while probability < random_number:
             index += 1
-            if index == len(probabilities):
-                index -= 1
-                break
             probability += probabilities[index]
         return index
 
     def crossover(self, chromosome1, chromosome2):
         if random.random() < self.crossover_rate:
-            position = random.randint(0, self.chromosome_lexeme_length * self.bits_in_lexeme)
+            position = random.randint(0, self.chromosome_lexeme_length * self.bits_in_lexeme - 1)
             temp = chromosome1.binary_string[position:]
             chromosome1.binary_string = chromosome1.binary_string[:position] + chromosome2.binary_string[position:]
             chromosome2.binary_string = chromosome2.binary_string[:position] + temp
