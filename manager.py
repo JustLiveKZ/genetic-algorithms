@@ -2,19 +2,28 @@ import random
 
 import chromosome as chromosome_module
 
+DEFAULT_CROSSOVER_RATE = 0.7
+DEFAULT_MUTATION_RATE = 0.001
+DEFAULT_MAX_GENERATIONS = 1000
+DEFAULT_MAX_SCORE = 1e18
+DEFAULT_POPULATION = 10
+DEFAULT_CHROMOSOME_LENGTH_IN_LEXEMES = 9
+
 
 class ChromosomeManager(object):
-    def __init__(self):
-        self.target_value = 42
-        self.crossover_rate = 0.7
-        self.mutation_rate = 0.001
-        self.max_generations = 1000
-        self.max_score = 1e18
-        self.population = 10
-        self.chromosome_lexeme_length = 9
-        self.bits_in_lexeme = 4
-        self.lexeme_number = 'number'
-        self.lexeme_operator = 'operator'
+    (LEXEME_TYPE_NUMBER, LEXEME_TYPE_OPERATOR) = range(0, 2)
+
+    def __init__(self, target_value, crossover_rate=DEFAULT_CROSSOVER_RATE, mutation_rate=DEFAULT_MUTATION_RATE,
+                 max_generations=DEFAULT_MAX_GENERATIONS, max_score=DEFAULT_MAX_SCORE,
+                 population=DEFAULT_POPULATION, chromosome_length_in_lexemes=DEFAULT_CHROMOSOME_LENGTH_IN_LEXEMES):
+        self.target_value = target_value
+        self.crossover_rate = crossover_rate
+        self.mutation_rate = mutation_rate
+        self.max_generations = max_generations
+        self.max_score = max_score
+        self.population = population
+        self.chromosome_length_in_lexemes = chromosome_length_in_lexemes
+        self.lexeme_length_in_bits = 4
         self.mappings = {
             '0000': 0,
             '0001': 1,
@@ -54,7 +63,7 @@ class ChromosomeManager(object):
 
     def generate_first_generation(self):
         for i in range(0, self.population):
-            chromosome = chromosome_module.Chromosome()
+            chromosome = chromosome_module.Chromosome(self)
             chromosome.fill_with_random_values()
             self.chromosomes.append(chromosome)
 
@@ -68,14 +77,14 @@ class ChromosomeManager(object):
         except AssertionError:
             probabilities[-1] = 1. - sum(probabilities[:-1])
             assert sum(probabilities) == 1.
-        lucky_chromosomes = [None, None]
+        lucky_chromosomes = []
         for i in range(0, 2):
             while True:
                 random_number = random.random()
                 index = self.get_index(random_number, probabilities)
                 if self.chromosomes[index] not in lucky_chromosomes:
                     break
-            lucky_chromosomes[i] = self.chromosomes[index]
+            lucky_chromosomes.append(self.chromosomes[index])
         return tuple(lucky_chromosomes)
 
     def get_index(self, random_number, probabilities):
@@ -88,10 +97,7 @@ class ChromosomeManager(object):
 
     def crossover(self, chromosome1, chromosome2):
         if random.random() < self.crossover_rate:
-            position = random.randint(0, self.chromosome_lexeme_length * self.bits_in_lexeme - 1)
+            position = random.randint(0, self.chromosome_length_in_lexemes * self.lexeme_length_in_bits - 1)
             temp = chromosome1.binary_string[position:]
             chromosome1.binary_string = chromosome1.binary_string[:position] + chromosome2.binary_string[position:]
             chromosome2.binary_string = chromosome2.binary_string[:position] + temp
-
-
-chromosome_manager = ChromosomeManager()

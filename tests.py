@@ -8,7 +8,8 @@ class ChromosomeTestCase(unittest.TestCase):
     chromosome = None
 
     def setUp(self):
-        self.chromosome = Chromosome()
+        self.chromosome_manager = ChromosomeManager(42)
+        self.chromosome = Chromosome(self.chromosome_manager)
 
     def test_str(self):
         self.chromosome.binary_string = '010111000011101100101010011111010100'
@@ -71,7 +72,7 @@ class ChromosomeTestCase(unittest.TestCase):
 
 class ChromosomeManagerTestCase(unittest.TestCase):
     def setUp(self):
-        self.chromosome_manager = ChromosomeManager()
+        self.chromosome_manager = ChromosomeManager(42)
 
     def test_generate_first_generation(self):
         self.chromosome_manager.generate_first_generation()

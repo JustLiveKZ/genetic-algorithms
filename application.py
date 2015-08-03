@@ -1,8 +1,9 @@
-from manager import chromosome_manager
+from manager import ChromosomeManager
 
 
 class Application(object):
     def run(self):
+        chromosome_manager = ChromosomeManager(42)
         chromosome, generation = chromosome_manager.solve()
         if chromosome.score == chromosome_manager.max_score:
             print('Solution was found')
